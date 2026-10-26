@@ -308,166 +308,32 @@ Demonstrates the importance of reliable transactional data in producing credible
 
 ---
 
-# 4. SQL Implementation
 
-The project applies SQL to analyze transactional activity, customer behaviour, and operational performance.
+## 4. SQL Analysis & Implementation
 
-## 4.1 Hourly Demand Analysis
+The project was developed using Google BigQuery and SQL to analyze ride transactions, customer behaviour, and station operations.
 
-```sql
-SELECT
-    EXTRACT(HOUR FROM start_time) AS ride_hour,
-    COUNT(*) AS total_rides
+### SQL Query Files
 
-FROM `sql-practice-end-to-end.sql_practice.rides`
+| Analysis | Description | SQL |
+|---|---|---|
+| Data Exploration | Dataset structure, record counts, and summary statistics | [View SQL](sql/01_data_exploration.sql) |
+| Data Quality | Missing values and unusual trip records | [View SQL](sql/02_data_quality.sql) |
+| Customer Segmentation | Membership behaviour and trip-duration analysis | [View SQL](sql/03_customer_segmentation.sql) |
+| Hourly Demand | Peak-hour usage patterns | [View SQL](sql/04_hourly_demand.sql) |
+| Station Popularity | Top 10 departure stations | [View SQL](sql/05_station_popularity.sql) |
+| Station Net Flow | Arrivals, departures, and station-level imbalances | [View SQL](sql/06_station_net_flow.sql) |
 
-GROUP BY ride_hour
-ORDER BY ride_hour;
-```
+### Technical Approach
 
-**Purpose:** Identify demand fluctuations and peak usage periods.
+- **Data Exploration:** Examined relational tables and calculated descriptive statistics.
+- **Data Validation:** Assessed missing values and flagged unusual ride records.
+- **Customer Segmentation:** Used SQL JOINs and aggregations to compare rider groups.
+- **Demand Analysis:** Applied temporal functions to identify peak usage periods.
+- **Operational Analytics:** Used CTEs to calculate station-level net flows.
 
----
+The SQL scripts are organized into separate files to support readability, review, and reproducibility.
 
-## 4.2 Customer Segmentation
-
-```sql
-SELECT
-    u.membership_level,
-
-    COUNT(r.ride_id) AS total_rides,
-
-    ROUND(
-        AVG(r.distance_km), 2
-    ) AS avg_distance_km,
-
-    ROUND(
-        AVG(
-            TIMESTAMP_DIFF(
-                r.end_time,
-                r.start_time,
-                SECOND
-            ) / 60.0
-        ), 2
-    ) AS avg_duration_minutes
-
-FROM `sql-practice-end-to-end.sql_practice.rides` r
-
-INNER JOIN
-    `sql-practice-end-to-end.sql_practice.users` u
-    ON r.user_id = u.user_id
-
-GROUP BY u.membership_level
-ORDER BY total_rides DESC;
-```
-
-**Purpose:** Compare membership-level ride volume, duration, and distance.
-
----
-
-## 4.3 Station Popularity Analysis
-
-```sql
-SELECT
-    s.station_name,
-    COUNT(r.ride_id) AS total_departures
-
-FROM `sql-practice-end-to-end.sql_practice.rides` r
-
-INNER JOIN
-    `sql-practice-end-to-end.sql_practice.stations` s
-    ON r.start_station_id = s.station_id
-
-GROUP BY s.station_name
-
-ORDER BY total_departures DESC
-
-LIMIT 10;
-```
-
-**Purpose:** Identify high-volume departure stations.
-
----
-
-## 4.4 Station Net-Flow Analysis
-
-```sql
-WITH departures AS (
-
-    SELECT
-        start_station_id AS station_id,
-        COUNT(*) AS total_departures
-
-    FROM `sql-practice-end-to-end.sql_practice.rides`
-
-    GROUP BY start_station_id
-),
-
-arrivals AS (
-
-    SELECT
-        end_station_id AS station_id,
-        COUNT(*) AS total_arrivals
-
-    FROM `sql-practice-end-to-end.sql_practice.rides`
-
-    GROUP BY end_station_id
-)
-
-SELECT
-    s.station_name,
-
-    COALESCE(
-        d.total_departures, 0
-    ) AS total_departures,
-
-    COALESCE(
-        a.total_arrivals, 0
-    ) AS total_arrivals,
-
-    COALESCE(a.total_arrivals, 0)
-    - COALESCE(d.total_departures, 0)
-    AS net_flow
-
-FROM `sql-practice-end-to-end.sql_practice.stations` s
-
-LEFT JOIN departures d
-    ON s.station_id = d.station_id
-
-LEFT JOIN arrivals a
-    ON s.station_id = a.station_id
-
-ORDER BY net_flow ASC;
-```
-
-**Purpose:** Identify stations experiencing net bike outflows and inflows.
-
----
-
-## 4.5 Data Quality Assessment
-
-```sql
-SELECT
-    COUNT(*) AS total_rides,
-
-    COUNTIF(
-        TIMESTAMP_DIFF(
-            end_time,
-            start_time,
-            SECOND
-        ) < 120
-    ) AS short_duration_rides,
-
-    COUNTIF(
-        distance_km = 0
-    ) AS zero_distance_rides
-
-FROM `sql-practice-end-to-end.sql_practice.rides`;
-```
-
-**Purpose:** Identify potentially unusual trip records for further review.
-
----
 
 # 5. Executive Recommendations
 

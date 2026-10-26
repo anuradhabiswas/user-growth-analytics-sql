@@ -560,8 +560,8 @@ Wilfrid Laurier University
 
 **Areas of Interest:** Business Analytics, Data Analytics, Financial Analysis, Economic Research
 
-**Technical Toolkit:** SQL · Google BigQuery · Power BI · Excel · Stata · R
+**Technical Toolkit:** SQL · Google BigQuery · Tableau · Excel · Stata · R
 
 ---
 
-*Guided SQL analytics practice project using a simulated bike-sharing dataset, with results organized into a business-focused portfolio case study.*
+
